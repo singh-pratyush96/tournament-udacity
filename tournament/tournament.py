@@ -18,11 +18,13 @@ def deleteMatches(tournamentid):
     cur = conn.cursor()
 
     # Reset player scores
-    sql = 'update player set wins=0, matches=0 where tid = {0};'.format(tournamentid)
+    sql = 'update player set wins=0, matches=0 where tid = {0};'\
+        .format(tournamentid)
     cur.execute(sql)
 
     # Reset last opponent id
-    sql = 'update lastopp set lastoppid = DEFAULT where tid = {0};'.format(tournamentid)
+    sql = 'update lastopp set lastoppid = DEFAULT where tid = {0};'\
+        .format(tournamentid)
     cur.execute(sql)
 
     conn.commit()
@@ -73,13 +75,14 @@ def registerPlayer(tournamentid, name):
     cur = conn.cursor()
 
     # Insert new player and get pid
-    sql = 'insert into player (name, tid) values(\'{0}\', {1}) returning pid;'.format(name.replace('\'', '\\'''),
-                                                                                      tournamentid)
+    sql = 'insert into player (name, tid) values(\'{0}\', {1}) returning pid;'\
+        .format(name.replace('\'', '\\'''), tournamentid)
     cur.execute(sql)
 
     # Insert this pid in last opponent table and set last opponent to default
     newid = cur.fetchall()[0][0]
-    sql = 'insert into lastopp (pid, tid) values({0}, {1});'.format(newid, tournamentid)
+    sql = 'insert into lastopp (pid, tid) values({0}, {1});'\
+        .format(newid, tournamentid)
     cur.execute(sql)
 
     conn.commit()
@@ -103,13 +106,14 @@ def playerStandings(tournamentid):
     cur = conn.cursor()
 
     # Get standings in order of pid for players who have played no matches
-    sql = 'select * from player where matches = 0 and tid = {0} order by pid'.format(tournamentid)
+    sql = 'select * from player where matches = 0 and tid = {0} order by pid'\
+        .format(tournamentid)
     cur.execute(sql)
     list1 = cur.fetchall()
 
     # Get standings in order of wins THEN win/matches THEN by pid for others
-    sql = 'select * from player where matches > 0 and tid = {0} order by wins desc, wins/matches desc, pid;'.format(
-        tournamentid)
+    sql = 'select * from player where matches > 0 and tid = {0} order by wins ' \
+          'desc, wins/matches desc, pid;'.format(tournamentid)
     cur.execute(sql)
     list2 = cur.fetchall()
 
@@ -122,18 +126,21 @@ def reportMatch(tournamentid, winner, loser):
     cur = conn.cursor()
 
     # Update player table with new data
-    sql = 'update player set wins = wins + 1, matches = matches + 1 where pid = {0} and tid = {1};'.format(winner,
-                                                                                                           tournamentid)
+    sql = 'update player set wins = wins + 1, matches = matches + 1 ' \
+          'where pid = {0} and tid = {1};'.format(winner, tournamentid)
     cur.execute(sql)
     if winner != loser:
-        sql = 'update player set matches = matches + 1 where pid = {0} and tid = {1};'.format(loser, tournamentid)
+        sql = 'update player set matches = matches + 1 where pid = {0}' \
+              ' and tid = {1};'.format(loser, tournamentid)
         cur.execute(sql)
 
     # Update lastopp table with new data
-    sql = 'update lastopp set lastoppid = {0} where pid = {1} and tid = {2};'.format(loser, winner, tournamentid)
+    sql = 'update lastopp set lastoppid = {0} where pid = {1} and tid = {2};'\
+        .format(loser, winner, tournamentid)
     cur.execute(sql)
     if winner != loser:
-        sql = 'update lastopp set lastoppid = {0} where pid = {1} and tid = {2};'.format(winner, loser, tournamentid)
+        sql = 'update lastopp set lastoppid = {0} where pid = {1}' \
+              ' and tid = {2};'.format(winner, loser, tournamentid)
         cur.execute(sql)
 
     conn.commit()
@@ -159,13 +166,14 @@ def swissPairings(tournamentid):
     cur = conn.cursor()
 
     # Get all players with last opponents in order
-    sql = 'select pid, name, lastoppid from player natural join lastopp where tid = {0} and matches = 0 order by pid ;'.format(
-        tournamentid)
+    sql = 'select pid, name, lastoppid from player natural join lastopp ' \
+          'where tid = {0} and matches = 0 order by pid ;'.format(tournamentid)
     cur.execute(sql)
     list1 = cur.fetchall()
 
-    sql = 'select pid, name, lastoppid from player natural join lastopp where tid = {0} and matches > 0 order by wins desc, wins/matches desc, pid;'.format(
-        tournamentid)
+    sql = 'select pid, name, lastoppid from player natural join lastopp ' \
+          'where tid = {0} and matches > 0 order by wins desc,' \
+          ' wins/matches desc, pid;'.format(tournamentid)
     cur.execute(sql)
     list2 = cur.fetchall()
 
@@ -197,5 +205,8 @@ def swissPairings(tournamentid):
         players.remove(player2)
         pairs.append((player1[0], player1[1], player2[0], player2[1]))
 
-    pairs.append((players[0][0], players[0][1], players[1][0], players[1][1]))
+    pairs.append(
+        (players[0][0], players[0][1],
+         players[1][0], players[1][1])
+    )
     return pairs
