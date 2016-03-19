@@ -1,15 +1,14 @@
 -- Relation to store player information
-create table if not exists player (
-pid serial primary key,               -- Player ID
-name varchar(50),                     -- Player Name
-wins integer default 0,               -- Number of matches won
-matches integer default 0,            -- Number of matches played
-tid integer                           -- Tournament ID
+create table if not exists players (
+pid serial primary key,                               -- Player ID
+name varchar(50),                                     -- Player Name
 );
 
--- Relation to keep track of last opponent of each player
-create table if not exists lastopp (
-pid integer primary key not null references player(pid),     -- Player ID
-lastoppid integer default -1,         -- Last opponent faced
-tid integer                           -- Tournament ID
+-- Relation for players and tournaments
+create table if not exists tournamentplayers (
+tid serial primary key not null,                      -- Tournament ID
+pid integer references players(pid) not null,         -- Player ID
+wins integer not null default 0,                      -- Number of wins in the tournament
+matches integer not null default 0,                   -- Number of matches in the tournament
+lastoppid integer references players(pid) default -1  -- Last opponent played with
 );
