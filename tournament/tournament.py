@@ -14,6 +14,14 @@ def connect():
 
 
 def existsPlayer(pid):
+    '''
+    Check if a player exists
+    Args:
+        pid: Player ID
+
+    Returns: Status
+
+    '''
     conn = connect()
     cur = conn.cursor()
 
@@ -26,8 +34,16 @@ def existsPlayer(pid):
     return result
 
 
-
 def existsTournament(tournamentid):
+    '''
+    Check if a tournament exists
+
+    Args:
+        tournamentid: Tournament ID
+
+    Returns: Status
+
+    '''
     conn = connect()
     cur = conn.cursor()
 
@@ -41,6 +57,15 @@ def existsTournament(tournamentid):
 
 
 def existsTournamentPlayer(tournamentid, pid):
+    '''
+    Check if a player is registered for a tournament
+    Args:
+        tournamentid: Tournament ID
+        pid: Player ID
+
+    Returns: Status
+
+    '''
     conn = connect()
     cur = conn.cursor()
 
@@ -60,6 +85,7 @@ def deleteMatches(tournamentid=-1):
     Args:
         tournamentid (int): ID of tournament of which matches are to be cleared
                         If no argument passed, reset all matches
+    Returns: Status
     """
     conn = connect()
     cur = conn.cursor()
@@ -86,6 +112,7 @@ def deleteTournamentPlayers(tournamentid=-1):
     Args:
         tournamentid (int): Tournament ID of which players are to be deleted.
                     If no argument passed, delete for all tournaments
+    Returns: Status
     """
     conn = connect()
     cur = conn.cursor()
@@ -111,6 +138,7 @@ def countTournamentPlayers(tournamentid=-1):
         tournamentid (int): Tournament ID to count players.
                         If no argument, count players participated in any
                          tournament
+    Returns: Status, count of players
     """
     conn = connect()
     cur = conn.cursor()
@@ -164,6 +192,7 @@ def playerStandings(tournamentid=-1):
         name: the player's full name (as registered)
         wins: the number of matches the player has won
         matches: the number of matches the player has played
+    Returns: Status, list of tuples
     """
     conn = connect()
     cur = conn.cursor()
@@ -204,6 +233,17 @@ def playerStandings(tournamentid=-1):
 
 
 def reportMatch(tournamentid, winner, loser):
+    '''
+    Report result of match. winner and loser are same
+    in case of a 'bye'
+    Args:
+        tournamentid: Tournament ID
+        winner: Winner's ID
+        loser: Losesr's ID
+
+    Returns: Status
+
+    '''
     conn = connect()
     cur = conn.cursor()
 
@@ -300,7 +340,8 @@ def addTournament(name):
     conn = connect()
     cur = conn.cursor()
 
-    sql = 'insert into tournaments (tname) values({0}) returning tid;'.format(name)
+    sql = 'insert into tournaments (tname) values({0}) returning tid;' \
+        .format(name)
     cur.execute(sql)
     tid = cur.fetchall()[0][0]
 
