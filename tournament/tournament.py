@@ -3,8 +3,9 @@
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
-import psycopg2
 from random import randint
+
+import psycopg2
 
 
 def connect():
@@ -12,19 +13,25 @@ def connect():
     return psycopg2.connect("dbname=tournament")
 
 
-def deleteMatches(tournamentid):
-    """Remove all the match records from the database."""
+def deleteMatches(tournamentid=-1):
+    """
+    Remove all the match records from the database for a tournament.
+    If no argument is passed, delete all matches from all tournament.
+
+    Args:
+        tournamentid (int): ID of tournament of which matches are to be cleared
+                        If no argument passed, reset all matches
+    """
     conn = connect()
     cur = conn.cursor()
 
-    # Reset player scores
-    sql = 'update player set wins=0, matches=0 where tid = {0};'\
-        .format(tournamentid)
-    cur.execute(sql)
-
-    # Reset last opponent id
-    sql = 'update lastopp set lastoppid = DEFAULT where tid = {0};'\
-        .format(tournamentid)
+    if tournamentid == -1:
+        sql = 'update table tournamentplayer set wins = DEFAULT,' \
+              ' matches = DEFAULT, lastoppid = default;'
+    else:
+        sql = 'update table tournamentplayer set wins = DEFAULT,' \
+              ' matches = DEFAULT, lastoppid = default where tid = {0};' \
+            .format(tournamentid)
     cur.execute(sql)
 
     conn.commit()
@@ -75,13 +82,13 @@ def registerPlayer(tournamentid, name):
     cur = conn.cursor()
 
     # Insert new player and get pid
-    sql = 'insert into player (name, tid) values(\'{0}\', {1}) returning pid;'\
+    sql = 'insert into player (name, tid) values(\'{0}\', {1}) returning pid;' \
         .format(name.replace('\'', '\\'''), tournamentid)
     cur.execute(sql)
 
     # Insert this pid in last opponent table and set last opponent to default
     newid = cur.fetchall()[0][0]
-    sql = 'insert into lastopp (pid, tid) values({0}, {1});'\
+    sql = 'insert into lastopp (pid, tid) values({0}, {1});' \
         .format(newid, tournamentid)
     cur.execute(sql)
 
@@ -106,7 +113,7 @@ def playerStandings(tournamentid):
     cur = conn.cursor()
 
     # Get standings in order of pid for players who have played no matches
-    sql = 'select * from player where matches = 0 and tid = {0} order by pid'\
+    sql = 'select * from player where matches = 0 and tid = {0} order by pid' \
         .format(tournamentid)
     cur.execute(sql)
     list1 = cur.fetchall()
@@ -135,7 +142,7 @@ def reportMatch(tournamentid, winner, loser):
         cur.execute(sql)
 
     # Update lastopp table with new data
-    sql = 'update lastopp set lastoppid = {0} where pid = {1} and tid = {2};'\
+    sql = 'update lastopp set lastoppid = {0} where pid = {1} and tid = {2};' \
         .format(loser, winner, tournamentid)
     cur.execute(sql)
     if winner != loser:

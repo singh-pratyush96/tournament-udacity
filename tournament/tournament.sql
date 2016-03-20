@@ -1,7 +1,7 @@
 -- Relation to store player information
 create table if not exists players (
 pid serial primary key,                               -- Player ID
-name varchar(50),                                     -- Player Name
+name varchar(50)                                     -- Player Name
 );
 
 -- Relation for players and tournaments
