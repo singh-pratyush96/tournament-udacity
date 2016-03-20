@@ -6,4 +6,4 @@ A database schema to store the game matches between players, implementation acco
 * Gives `'bye'` to random player in case of odd players.
 * Multiple tournament support.
 * No consecutive rematch between players.
-* A player gets highest `'bye'` streak of 1.
+* A player gets highest `'bye'` streak of 1 (if there are more than 2 players).
