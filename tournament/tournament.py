@@ -3,7 +3,7 @@
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
-from random import randint
+from random import shuffle
 
 import psycopg2
 
@@ -190,8 +190,19 @@ def reportMatch(tournamentid, winner, loser):
     conn = connect()
     cur = conn.cursor()
 
-    if not existsTournamentPlayer(tournamentid, winner) or not existsTournamentPlayer(tournamentid, loser):
+    if not existsTournamentPlayer(tournamentid, winner) or \
+            not existsTournamentPlayer(tournamentid, loser):
         return False
+
+    sql = 'update table tournamentplayer set matches = matches + 1,' \
+          ' wins = wins + 1, lastopp = {0} where tid = {1} and pid = {2};' \
+        .format(loser, tournamentid, winner)
+    cur.execute(sql)
+    if winner != loser:  # If not a bye
+        sql = 'update table tournamentplayer set matches = matches + 1,' \
+              ' lastopp = {0} where tid = {1} and pid = {2};' \
+            .format(winner, tournamentid, loser)
+        cur.execute(sql)
 
     conn.commit()
     conn.close()
@@ -215,48 +226,46 @@ def swissPairings(tournamentid):
     conn = connect()
     cur = conn.cursor()
 
-    # Get all players with last opponents in order
-    sql = 'select pid, name, lastoppid from player natural join lastopp ' \
-          'where tid = {0} and matches = 0 order by pid ;'.format(tournamentid)
+    sql = 'select pid, pname, lastopp from players natural join' \
+          ' tournamentplayer where tid = {0} and matches = 0 ' \
+          'order by pid;' \
+        .format(tournamentid)
     cur.execute(sql)
     list1 = cur.fetchall()
 
-    sql = 'select pid, name, lastoppid from player natural join lastopp ' \
-          'where tid = {0} and matches > 0 order by wins desc,' \
-          ' wins/matches desc, pid;'.format(tournamentid)
+    sql = 'select pid, pname, lastopp from players natural join' \
+          ' tournamentplayer where tid = {0} and matches > 0 ' \
+          'order by wins desc, wins/matches desc, pid;' \
+        .format(tournamentid)
     cur.execute(sql)
     list2 = cur.fetchall()
 
     players = list2 + list1
-    conn.close()
 
-    # If odd players, give one of them a bye
-    templist = list(players)
+    # Odd players, bye one who wasn't byed last time
     if len(players) % 2 == 1:
-        loop = True
-        while loop:
-            position = randint(0, len(templist) - 1)
-            temp = templist[position]
-            if temp[0] != temp[2]:
-                players.remove(temp)
-                reportMatch(tournamentid, temp[0], temp[0])
-                loop = False
-            templist.remove(temp)
+        tempList = list(players)
+        shuffle(tempList)
+        byed = False
+        while not byed:
+            if tempList[0][0] == tempList[0][2]:
+                byed = True
+                players.remove(tempList[0])
+                reportMatch(tournamentid, tempList[0][0], tempList[0][0])
+            tempList.remove(tempList[0])
 
-    # Generate pairings
+    # Arrange players, no rematch
     pairs = []
-    while len(players) > 2:
+    while len(players) > 2:  # No. of players will always be odd
         player1 = players[0]
-        if players[0][2] == players[1][0]:  # If next player in order was previous
+        player2 = players[1]
+        if player1[2] == player2[0]:
             player2 = players[2]
-        else:
-            player2 = players[1]
         players.remove(player1)
         players.remove(player2)
         pairs.append((player1[0], player1[1], player2[0], player2[1]))
 
-    pairs.append(
-        (players[0][0], players[0][1],
-         players[1][0], players[1][1])
-    )
+    # Add remaining two players
+    pairs.append((players[0][0], players[0][1], players[1][0], players[1][1]))
+
     return pairs
