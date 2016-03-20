@@ -268,4 +268,5 @@ def swissPairings(tournamentid):
     # Add remaining two players
     pairs.append((players[0][0], players[0][1], players[1][0], players[1][1]))
 
+    conn.close()
     return pairs
