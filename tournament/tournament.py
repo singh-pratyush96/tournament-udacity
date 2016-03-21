@@ -373,3 +373,20 @@ def addPlayerTournament(tid, pid):
     conn.commit()
     conn.close()
     return True
+
+
+def countTournaments():
+    '''
+    Count number of tournaments
+    Returns: Number of tournaments
+    '''
+    conn = connect()
+    cur = conn.cursor()
+
+    sql = 'select count(*) from tournaments;'
+    cur.execute(sql)
+
+    count = cur.fetchall()[0][0]
+
+    conn.close()
+    return count
