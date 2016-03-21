@@ -3,9 +3,8 @@
 # tournament.py -- implementation of a Swiss-system tournament
 #
 
-from random import shuffle
-
 import psycopg2
+from random import shuffle
 
 
 def connect():
@@ -92,12 +91,12 @@ def deleteMatches(tournamentid=-1):
 
     if tournamentid == -1:  # If no argument passed
         sql = 'update table tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppid = default;'
+              ' matches = DEFAULT, lastoppidid = default;'
     else:
         if not existsTournament(tournamentid):
             return False
         sql = 'update table tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppid = default where tid = {0};' \
+              ' matches = DEFAULT, lastoppidid = default where tid = {0};' \
             .format(tournamentid)
     cur.execute(sql)
 
@@ -149,13 +148,31 @@ def countTournamentPlayers(tournamentid=-1):
     else:
         if not existsTournament(tournamentid):
             return False, -1
-        sql = 'select count(distinct pid) from tournamentplayers' \
+        sql = 'select count(distinct pid) from tournamentplayers ' \
               'where tid = {0};'.format(tournamentid)
     cur.execute(sql)
 
     player_count = cur.fetchall()[0][0]
     conn.close()
     return True, player_count
+
+
+def playerCount():
+    '''
+    Count all players, whether registered or not
+    Returns: Number of players
+    '''
+
+    conn = connect()
+    cur = conn.cursor()
+
+    sql = 'select count(*) from players;'
+    cur.execute(sql)
+
+    count = cur.fetchall()[0][0]
+
+    conn.close()
+    return count
 
 
 def registerPlayer(name):
@@ -171,7 +188,7 @@ def registerPlayer(name):
     conn = connect()
     cur = conn.cursor()
 
-    sql = 'insert into players (name) values ({0}) returning pid;', format(name)
+    sql = 'insert into players (pname) values (\'{0}\') returning pid;'.format(name.replace('\'', '\'\''))
     cur.execute(sql)
     pid = cur.fetchall()[0][0]
 
@@ -232,6 +249,20 @@ def playerStandings(tournamentid=-1):
     return True, list2 + list1
 
 
+def clearPlayers():
+    '''
+    Delete all players
+    '''
+    conn = connect()
+    cur = conn.cursor()
+
+    sql = 'delete from players; delete from tournamentplayers;'
+    cur.execute(sql)
+
+    conn.commit()
+    conn.close()
+
+
 def reportMatch(tournamentid, winner, loser):
     '''
     Report result of match. winner and loser are same
@@ -252,12 +283,12 @@ def reportMatch(tournamentid, winner, loser):
         return False
 
     sql = 'update table tournamentplayers set matches = matches + 1,' \
-          ' wins = wins + 1, lastopp = {0} where tid = {1} and pid = {2};' \
+          ' wins = wins + 1, lastoppid = {0} where tid = {1} and pid = {2};' \
         .format(loser, tournamentid, winner)
     cur.execute(sql)
     if winner != loser:  # If not a bye
         sql = 'update table tournamentplayers set matches = matches + 1,' \
-              ' lastopp = {0} where tid = {1} and pid = {2};' \
+              ' lastoppid = {0} where tid = {1} and pid = {2};' \
             .format(winner, tournamentid, loser)
         cur.execute(sql)
 
@@ -283,14 +314,14 @@ def swissPairings(tournamentid):
     conn = connect()
     cur = conn.cursor()
 
-    sql = 'select pid, pname, lastopp from players natural join' \
+    sql = 'select pid, pname, lastoppid from players natural join' \
           ' tournamentplayers where tid = {0} and matches = 0 ' \
           'order by pid;' \
         .format(tournamentid)
     cur.execute(sql)
     list1 = cur.fetchall()
 
-    sql = 'select pid, pname, lastopp from players natural join' \
+    sql = 'select pid, pname, lastoppid from players natural join' \
           ' tournamentplayers where tid = {0} and matches > 0 ' \
           'order by wins desc, wins/matches desc, pid;' \
         .format(tournamentid)
@@ -304,12 +335,15 @@ def swissPairings(tournamentid):
         tempList = list(players)
         shuffle(tempList)
         byed = False
-        while not byed:
+        randomFirst = tempList[0]
+        while not byed and len(tempList) > 0:
             if tempList[0][0] == tempList[0][2]:
-                byed = True
                 players.remove(tempList[0])
                 reportMatch(tournamentid, tempList[0][0], tempList[0][0])
+                byed = True
             tempList.remove(tempList[0])
+        if not byed:
+            players.remove(randomFirst)
 
     # Arrange players, no rematch
     pairs = []
@@ -340,7 +374,7 @@ def addTournament(name):
     conn = connect()
     cur = conn.cursor()
 
-    sql = 'insert into tournaments (tname) values({0}) returning tid;' \
+    sql = 'insert into tournaments (tname) values(\'{0}\') returning tid;' \
         .format(name)
     cur.execute(sql)
     tid = cur.fetchall()[0][0]
@@ -390,3 +424,17 @@ def countTournaments():
 
     conn.close()
     return count
+
+
+def clearTournaments():
+    '''
+    Delete all tournaments
+    '''
+    conn = connect()
+    cur = conn.cursor()
+
+    sql = 'delete from tournamentplayers; delete from tournaments;'
+    cur.execute(sql)
+
+    conn.commit()
+    conn.close()
