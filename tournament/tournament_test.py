@@ -5,6 +5,7 @@
 #
 # If you do add any of the extra credit options, be sure to add/modify these test cases
 # as appropriate to account for your module's added functionality.
+import sys
 
 from tournament import *
 
@@ -75,4 +76,31 @@ if __name__ == '__main__':
     else:
         print('Players added successfully')
 
-    print(swissPairings(tidFootball))
+    pairsFootball = swissPairings(tidFootball)
+
+    if len(pairsFootball) != 1:
+        raise ValueError(
+            'Expected 1 pair, got {0}'.format(len(pairsFootball))
+        )
+    else:
+        print('Success for generating pairs.')
+
+    player6 = registerPlayer('Messi')
+
+    if not addPlayerTournament(tidFootball, player6):
+        print('Unable to add new player')
+        sys.exit()
+
+    pairsFootball = swissPairings(tidFootball)
+
+    print(pairsFootball)
+
+    if len(pairsFootball) != 2:
+        raise ValueError(
+            'Expected 2 pairs got {0}'.format(len(pairsFootball))
+        )
+
+    reportMatch(tidFootball, pairsFootball[0][0], pairsFootball[0][2])
+    reportMatch(tidFootball, pairsFootball[1][2], pairsFootball[1][0])
+
+    newPairsFootball = swissPairings(tidFootball)
