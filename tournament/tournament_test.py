@@ -124,3 +124,11 @@ if __name__ == '__main__':
         )
     else:
         print('Sum of matches is correct')
+
+    n = sum([x[2] for x in playersFootball])
+    if n != 5:
+        raise ValueError(
+            'Expected sum of 8 for Football wins but found {0}'.format(n)
+        )
+    else:
+        print('Sum of wins is correct.')
