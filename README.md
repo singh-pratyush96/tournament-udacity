@@ -62,4 +62,10 @@ A database schema to store the game matches between players, implementation acco
     status = deleteMatches(tournament_id)
     clearTournaments()
     ```  
-    *Note* : Pass no argument in `deleteMatches()` to delete matches for all tournaments.
+    *Note* : Pass no argument in `deleteMatches()` to delete matches for all tournaments.  
+    * Check if a player, tournament exists or check if a player is registered for a tournament :  
+    ```python
+    status = existsPlayer(player_id)
+    status = existsTournament(tournament_id)
+    status = existsTournamentPlayer(tournament_id, player_id)
+    ```
