@@ -41,7 +41,8 @@ if __name__ == '__main__':
 
     # Try to query player count of a non existing tournament
     status, pcount = countTournamentPlayers(123123123)
-    if status == True:
+
+    if status:
         raise ValueError(
             'Querry possible for non existing tournament'
         )
@@ -93,7 +94,16 @@ if __name__ == '__main__':
 
     pairsFootball = swissPairings(tidFootball)
 
-    print(pairsFootball)
+    if len(pairsFootball) != 2:
+        raise ValueError(
+            'Expected 2 pairs got {0}'.format(len(pairsFootball))
+        )
+
+    # Simulate some plays
+    reportMatch(tidFootball, pairsFootball[0][0], pairsFootball[0][2])
+    reportMatch(tidFootball, pairsFootball[1][2], pairsFootball[1][0])
+
+    pairsFootball = swissPairings(tidFootball)
 
     if len(pairsFootball) != 2:
         raise ValueError(
@@ -101,6 +111,16 @@ if __name__ == '__main__':
         )
 
     reportMatch(tidFootball, pairsFootball[0][0], pairsFootball[0][2])
-    reportMatch(tidFootball, pairsFootball[1][2], pairsFootball[1][0])
+    reportMatch(tidFootball, pairsFootball[1][0], pairsFootball[1][2])
 
-    newPairsFootball = swissPairings(tidFootball)
+    # Get standings for football
+    status, playersFootball = playerStandings(tidFootball)
+
+    # Sum of all matches should be 8 because of 4 games and 1 bye
+    n = sum([x[3] for x in playersFootball])
+    if n != 9:
+        raise ValueError(
+            'Expected sum of 8 for Football matches but found {0}'.format(n)
+        )
+    else:
+        print('Sum of matches is correct')

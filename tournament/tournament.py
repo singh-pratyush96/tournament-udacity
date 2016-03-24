@@ -70,7 +70,7 @@ def existsTournamentPlayer(tournamentid, pid):
 
     sql = 'select count(*) from tournamentplayers where tid = {0} and pid = {1};'.format(tournamentid, pid)
     cur.execute(sql)
-    result = cur.fetchall()[0][0] == 0
+    result = cur.fetchall()[0][0] == 1
 
     conn.close()
     return result
@@ -90,12 +90,12 @@ def deleteMatches(tournamentid=-1):
     cur = conn.cursor()
 
     if tournamentid == -1:  # If no argument passed
-        sql = 'update table tournamentplayers set wins = DEFAULT,' \
+        sql = 'update tournamentplayers set wins = DEFAULT,' \
               ' matches = DEFAULT, lastoppidid = default;'
     else:
         if not existsTournament(tournamentid):
             return False
-        sql = 'update table tournamentplayers set wins = DEFAULT,' \
+        sql = 'update tournamentplayers set wins = DEFAULT,' \
               ' matches = DEFAULT, lastoppidid = default where tid = {0};' \
             .format(tournamentid)
     cur.execute(sql)
@@ -216,14 +216,14 @@ def playerStandings(tournamentid=-1):
 
     if tournamentid == -1:
         sql = 'select pid, pname, cwins, cmatches from players natural join ' \
-              '(select pid, count(wins) as cwins, count(matches) as cmatches' \
+              '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
               ' from tournamentplayers where matches = 0 group by pid)' \
               ' as allinfo order by pid;'
         cur.execute(sql)
         list1 = cur.fetchall()
 
         sql = 'select pid, pname, cwins, cmatches from players natural join ' \
-              '(select pid, count(wins) as cwins, count(matches) as cmatches' \
+              '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
               ' from tournamentplayers where matches > 0 group by pid)' \
               ' as allinfo order by cwins desc, cwins/cmatches desc, pid;'
         cur.execute(sql)
@@ -264,17 +264,17 @@ def clearPlayers():
 
 
 def reportMatch(tournamentid, winner, loser):
-    '''
+    """
     Report result of match. winner and loser are same
     in case of a 'bye'
     Args:
         tournamentid: Tournament ID
-        winner: Winner's ID
-        loser: Losesr's ID
+        winner: Winner ID
+        loser: Loser ID
 
     Returns: Status
 
-    '''
+    """
     conn = connect()
     cur = conn.cursor()
 
@@ -282,12 +282,12 @@ def reportMatch(tournamentid, winner, loser):
             not existsTournamentPlayer(tournamentid, loser):
         return False
 
-    sql = 'update table tournamentplayers set matches = matches + 1,' \
+    sql = 'update tournamentplayers set matches = matches + 1,' \
           ' wins = wins + 1, lastoppid = {0} where tid = {1} and pid = {2};' \
         .format(loser, tournamentid, winner)
     cur.execute(sql)
     if winner != loser:  # If not a bye
-        sql = 'update table tournamentplayers set matches = matches + 1,' \
+        sql = 'update tournamentplayers set matches = matches + 1,' \
               ' lastoppid = {0} where tid = {1} and pid = {2};' \
             .format(winner, tournamentid, loser)
         cur.execute(sql)
@@ -343,6 +343,7 @@ def swissPairings(tournamentid):
                 byed = True
             tempList.remove(tempList[0])
         if not byed:
+            reportMatch(tournamentid, randomFirst[0], randomFirst[0])
             players.remove(randomFirst)
 
     # Arrange players, no rematch

@@ -7,3 +7,5 @@ A database schema to store the game matches between players, implementation acco
 * Multiple tournament support.
 * No consecutive rematch between players (if there are more than 2 players).
 * A player gets highest `'bye'` streak of 1 (if there are more than 2 players).
+
+### nt 
