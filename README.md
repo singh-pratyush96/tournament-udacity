@@ -69,3 +69,8 @@ A database schema to store the game matches between players, implementation acco
     status = existsTournament(tournament_id)
     status = existsTournamentPlayer(tournament_id, player_id)
     ```
+    
+* __Running a test to check proper functioning__
+    ```bash
+    python tournament_test.py
+    ```
