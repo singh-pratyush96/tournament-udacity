@@ -123,7 +123,7 @@ if __name__ == '__main__':
             'Expected sum of 8 for Football matches but found {0}'.format(n)
         )
     else:
-        print('Sum of matches is correct')
+        print('Sum of matches is correct before clearing matches.')
 
     n = sum([x[2] for x in playersFootball])
     if n != 5:
@@ -131,4 +131,34 @@ if __name__ == '__main__':
             'Expected sum of 8 for Football wins but found {0}'.format(n)
         )
     else:
-        print('Sum of wins is correct.')
+        print('Sum of wins is correct before clearing matches.')
+
+    # Clear stats for Football
+    deleteMatches(tidFootball)
+
+    # Get sum of matches again
+    status, playersFootball = playerStandings(tidFootball)
+
+    # Sum of all matches should be 0
+    n = sum([x[3] for x in playersFootball])
+    if n != 0:
+        raise ValueError(
+            'Expected sum of 0 for Football matches but found {0}'.format(n)
+        )
+    else:
+        print('Sum of matches is correct after clearing matches.')
+
+    # Delete all foorball players
+    deleteTournamentPlayers(tidFootball)
+
+    # Count players in football
+    status, countPlayer = countTournamentPlayers(tidFootball)
+
+    if countPlayer != 0:
+        raise ValueError(
+            'After deletion, players should be 0 but found {0}'.format(countPlayer)
+        )
+    else:
+        print('Players for football deleted.')
+
+    print ('\nAll tests passed!')

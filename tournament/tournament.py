@@ -91,12 +91,12 @@ def deleteMatches(tournamentid=-1):
 
     if tournamentid == -1:  # If no argument passed
         sql = 'update tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppidid = default;'
+              ' matches = DEFAULT, lastoppid = default;'
     else:
         if not existsTournament(tournamentid):
             return False
         sql = 'update tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppidid = default where tid = {0};' \
+              ' matches = DEFAULT, lastoppid = default where tid = {0};' \
             .format(tournamentid)
     cur.execute(sql)
 
