@@ -28,7 +28,7 @@ def existsPlayer(pid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from players where pid = %d;'
+    sql = 'select count(*) from players where pid = %s;'
     cur.execute(sql, (pid,))
     result = cur.fetchall()[0][0] == 1
 
@@ -48,7 +48,7 @@ def existsTournament(tournamentid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from tournaments where tid = %d;'
+    sql = 'select count(*) from tournaments where tid = %s;'
     cur.execute(sql, (tournamentid,))
     result = cur.fetchall()[0][0] == 1
 
@@ -68,7 +68,7 @@ def existsTournamentPlayer(tournamentid, pid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from tournamentplayers where tid = %d and pid = %d;'
+    sql = 'select count(*) from tournamentplayers where tid = %s and pid = %s;'
     cur.execute(sql, (tournamentid, pid))
     result = cur.fetchall()[0][0] == 1
 
@@ -97,7 +97,7 @@ def deleteMatches(tournamentid=-1):
             conn.close()
             return False
         sql = 'update tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppid = default where tid = %d;'
+              ' matches = DEFAULT, lastoppid = default where tid = %s;'
         cur.execute(sql, (tournamentid,))
 
     conn.commit()
@@ -151,7 +151,7 @@ def countTournamentPlayers(tournamentid=-1):
             conn.close()
             return False, -1
         sql = 'select count(distinct pid) from tournamentplayers ' \
-              'where tid = %d;'
+              'where tid = %s;'
         cur.execute(sql, (tournamentid,))
 
     player_count = cur.fetchall()[0][0]
@@ -232,13 +232,13 @@ def playerStandings(tournamentid=-1):
             conn.close()
             return False, []
         sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = %d and matches = 0 ' \
+              ' tournamentplayers where tid = %s and matches = 0 ' \
               'order by pid;'
         cur.execute(sql, (tournamentid,))
         list1 = cur.fetchall()
 
         sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = %d and matches > 0 ' \
+              ' tournamentplayers where tid = %s and matches > 0 ' \
               'order by wins desc, wins/matches desc, pid;'
         cur.execute(sql, (tournamentid,))
         list2 = cur.fetchall()
@@ -280,11 +280,11 @@ def reportMatch(tournamentid, winner, loser):
         return False
 
     sql = 'update tournamentplayers set matches = matches + 1,' \
-          ' wins = wins + 1, lastoppid = %d where tid = %d and pid = %d;'
+          ' wins = wins + 1, lastoppid = %s where tid = %s and pid = %s;'
     cur.execute(sql, (loser, tournamentid, winner))
     if winner != loser:  # If not a bye
         sql = 'update tournamentplayers set matches = matches + 1,' \
-              ' lastoppid = %d where tid = %d and pid = %d;'
+              ' lastoppid = %s where tid = %s and pid = %s;'
         cur.execute(sql, (winner, tournamentid, loser))
 
     conn.commit()
@@ -310,13 +310,13 @@ def swissPairings(tournamentid):
     conn, cur = connect()
 
     sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = %d and matches = 0 ' \
+          ' tournamentplayers where tid = %s and matches = 0 ' \
           'order by pid;'
     cur.execute(sql, (tournamentid,))
     list1 = cur.fetchall()
 
     sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = %d and matches > 0 ' \
+          ' tournamentplayers where tid = %s and matches > 0 ' \
           'order by wins desc, wins/matches desc, pid;'
     cur.execute(sql, (tournamentid,))
     list2 = cur.fetchall()
@@ -391,7 +391,7 @@ def addPlayerTournament(tid, pid):
 
     conn, cur = connect()
 
-    sql = 'insert into tournamentplayers (tid, pid) values (%d, %d);'
+    sql = 'insert into tournamentplayers (tid, pid) values (%s, %s);'
     cur.execute(sql, (tid, pid))
 
     conn.commit()
