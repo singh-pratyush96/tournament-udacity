@@ -161,4 +161,12 @@ if __name__ == '__main__':
     else:
         print('Players for football deleted.')
 
+    # Testing for SQL Injection
+    sql = '0; delete from players;'
+    try:
+        existsPlayer(sql)
+        raise NotImplementedError('Not robust against SQL Injections')
+    except psycopg2.DataError:
+        print('Robust against SQL Injections')
+
     print ('\nAll tests passed!')
