@@ -28,9 +28,8 @@ def existsPlayer(pid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from players where pid = {0};' \
-        .format(pid)
-    cur.execute(sql)
+    sql = 'select count(*) from players where pid = %d;'
+    cur.execute(sql, (pid,))
     result = cur.fetchall()[0][0] == 1
 
     conn.close()
@@ -49,9 +48,8 @@ def existsTournament(tournamentid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from tournaments where tid = {0};' \
-        .format(tournamentid)
-    cur.execute(sql)
+    sql = 'select count(*) from tournaments where tid = %d;'
+    cur.execute(sql, (tournamentid,))
     result = cur.fetchall()[0][0] == 1
 
     conn.close()
@@ -70,8 +68,8 @@ def existsTournamentPlayer(tournamentid, pid):
     """
     conn, cur = connect()
 
-    sql = 'select count(*) from tournamentplayers where tid = {0} and pid = {1};'.format(tournamentid, pid)
-    cur.execute(sql)
+    sql = 'select count(*) from tournamentplayers where tid = %d and pid = %d;'
+    cur.execute(sql, (tournamentid, pid))
     result = cur.fetchall()[0][0] == 1
 
     conn.close()
@@ -93,14 +91,14 @@ def deleteMatches(tournamentid=-1):
     if tournamentid == -1:  # If no argument passed
         sql = 'update tournamentplayers set wins = DEFAULT,' \
               ' matches = DEFAULT, lastoppid = default;'
+        cur.execute(sql)
     else:
         if not existsTournament(tournamentid):
             conn.close()
             return False
         sql = 'update tournamentplayers set wins = DEFAULT,' \
-              ' matches = DEFAULT, lastoppid = default where tid = {0};' \
-            .format(tournamentid)
-    cur.execute(sql)
+              ' matches = DEFAULT, lastoppid = default where tid = %d;'
+        cur.execute(sql, (tournamentid,))
 
     conn.commit()
     conn.close()
@@ -147,13 +145,14 @@ def countTournamentPlayers(tournamentid=-1):
     # Get count of rows in player relation
     if tournamentid == -1:
         sql = 'select count(distinct pid) from tournamentplayers;'
+        cur.execute(sql)
     else:
         if not existsTournament(tournamentid):
             conn.close()
             return False, -1
         sql = 'select count(distinct pid) from tournamentplayers ' \
-              'where tid = {0};'.format(tournamentid)
-    cur.execute(sql)
+              'where tid = %d;'
+        cur.execute(sql, (tournamentid,))
 
     player_count = cur.fetchall()[0][0]
     conn.close()
@@ -189,8 +188,8 @@ def registerPlayer(name):
     """
     conn, cur = connect()
 
-    sql = 'insert into players (pname) values (\'{0}\') returning pid;'.format(name.replace('\'', '\'\''))
-    cur.execute(sql)
+    sql = 'insert into players (pname) values (%s) returning pid;'
+    cur.execute(sql, (name,))
     pid = cur.fetchall()[0][0]
 
     conn.commit()
@@ -233,17 +232,15 @@ def playerStandings(tournamentid=-1):
             conn.close()
             return False, []
         sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = {0} and matches = 0 ' \
-              'order by pid;' \
-            .format(tournamentid)
-        cur.execute(sql)
+              ' tournamentplayers where tid = %d and matches = 0 ' \
+              'order by pid;'
+        cur.execute(sql, (tournamentid,))
         list1 = cur.fetchall()
 
         sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = {0} and matches > 0 ' \
-              'order by wins desc, wins/matches desc, pid;' \
-            .format(tournamentid)
-        cur.execute(sql)
+              ' tournamentplayers where tid = %d and matches > 0 ' \
+              'order by wins desc, wins/matches desc, pid;'
+        cur.execute(sql, (tournamentid,))
         list2 = cur.fetchall()
 
     conn.close()
@@ -283,14 +280,12 @@ def reportMatch(tournamentid, winner, loser):
         return False
 
     sql = 'update tournamentplayers set matches = matches + 1,' \
-          ' wins = wins + 1, lastoppid = {0} where tid = {1} and pid = {2};' \
-        .format(loser, tournamentid, winner)
-    cur.execute(sql)
+          ' wins = wins + 1, lastoppid = %d where tid = %d and pid = %d;'
+    cur.execute(sql, (loser, tournamentid, winner))
     if winner != loser:  # If not a bye
         sql = 'update tournamentplayers set matches = matches + 1,' \
-              ' lastoppid = {0} where tid = {1} and pid = {2};' \
-            .format(winner, tournamentid, loser)
-        cur.execute(sql)
+              ' lastoppid = %d where tid = %d and pid = %d;'
+        cur.execute(sql, (winner, tournamentid, loser))
 
     conn.commit()
     conn.close()
@@ -315,17 +310,15 @@ def swissPairings(tournamentid):
     conn, cur = connect()
 
     sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = {0} and matches = 0 ' \
-          'order by pid;' \
-        .format(tournamentid)
-    cur.execute(sql)
+          ' tournamentplayers where tid = %d and matches = 0 ' \
+          'order by pid;'
+    cur.execute(sql, (tournamentid,))
     list1 = cur.fetchall()
 
     sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = {0} and matches > 0 ' \
-          'order by wins desc, wins/matches desc, pid;' \
-        .format(tournamentid)
-    cur.execute(sql)
+          ' tournamentplayers where tid = %d and matches > 0 ' \
+          'order by wins desc, wins/matches desc, pid;'
+    cur.execute(sql, (tournamentid,))
     list2 = cur.fetchall()
 
     players = list2 + list1
@@ -374,9 +367,8 @@ def addTournament(name):
     """
     conn, cur = connect()
 
-    sql = 'insert into tournaments (tname) values(\'{0}\') returning tid;' \
-        .format(name)
-    cur.execute(sql)
+    sql = 'insert into tournaments (tname) values(%s) returning tid;'
+    cur.execute(sql, (name,))
     tid = cur.fetchall()[0][0]
 
     conn.commit()
@@ -399,9 +391,8 @@ def addPlayerTournament(tid, pid):
 
     conn, cur = connect()
 
-    sql = 'insert into tournamentplayers (tid, pid) values ({0}, {1});' \
-        .format(tid, pid)
-    cur.execute(sql)
+    sql = 'insert into tournamentplayers (tid, pid) values (%d, %d);'
+    cur.execute(sql, (tid, pid))
 
     conn.commit()
     conn.close()
