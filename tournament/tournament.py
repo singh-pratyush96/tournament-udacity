@@ -214,37 +214,20 @@ def playerStandings(tournamentid=-1):
     conn, cur = connect()
 
     if tournamentid == -1:
-        sql = 'select pid, pname, cwins, cmatches from players natural join ' \
-              '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
-              ' from tournamentplayers  group by pid)' \
-              ' as allinfo  where cmatches = 0 order by pid;'
+        sql = 'select * from all_tournament_player_stats;'
         cur.execute(sql)
         list1 = cur.fetchall()
-
-        sql = 'select pid, pname, cwins, cmatches from players natural join ' \
-              '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
-              ' from tournamentplayers  group by pid)' \
-              ' as allinfo where cmatches > 0 order by cwins desc, cwins/cmatches desc, pid;'
-        cur.execute(sql)
-        list2 = cur.fetchall()
     else:
         if not existsTournament(tournamentid):
             conn.close()
             return False, []
-        sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = %s and matches = 0 ' \
-              'order by pid;'
+        sql = 'select pid, pname, wins, matches from tournament_players_stats' \
+              ' where tid = %s;'
         cur.execute(sql, (tournamentid,))
         list1 = cur.fetchall()
 
-        sql = 'select pid, pname, wins, matches from players natural join' \
-              ' tournamentplayers where tid = %s and matches > 0 ' \
-              'order by wins desc, wins/matches desc, pid;'
-        cur.execute(sql, (tournamentid,))
-        list2 = cur.fetchall()
-
     conn.close()
-    return True, list2 + list1
+    return True, list1
 
 
 def clearPlayers():
@@ -309,19 +292,10 @@ def swissPairings(tournamentid):
     """
     conn, cur = connect()
 
-    sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = %s and matches = 0 ' \
-          'order by pid;'
+    sql = 'select pid, pname, lastoppid from tournament_players_stats' \
+          ' where tid = %s;'
     cur.execute(sql, (tournamentid,))
-    list1 = cur.fetchall()
-
-    sql = 'select pid, pname, lastoppid from players natural join' \
-          ' tournamentplayers where tid = %s and matches > 0 ' \
-          'order by wins desc, wins/matches desc, pid;'
-    cur.execute(sql, (tournamentid,))
-    list2 = cur.fetchall()
-
-    players = list2 + list1
+    players = cur.fetchall()
 
     # Odd players, bye one who wasn't byed last time
     if len(players) % 2 == 1:

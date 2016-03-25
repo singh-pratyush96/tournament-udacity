@@ -20,14 +20,14 @@ lastoppid integer default -1  -- Last opponent played with
 );
 
 -- View for getting details for all tournaments
-create view if not exists all_tournament_player_stats as
+create view all_tournament_player_stats as
 (
 (
 select pid, pname, cwins, cmatches from
  players
    natural join
  (select pid, sum(wins) as cwins, sum(matches) as cmatches from
-   tournamentplayers  group by pid)
+   tournamentplayers  group by pid) as x
 where cmatches > 0 order by cwins desc, cwins/cmatches desc, pid
 )
 union all
@@ -36,16 +36,16 @@ select pid, pname, cwins, cmatches from
   players
     natural join
   (select pid, sum(wins) as cwins, sum(matches) as cmatches from
-    tournamentplayers  group by pid)
+    tournamentplayers  group by pid) as x
 where cmatches = 0 order by pid
 )
 );
 
 -- View for getting tournament wise details
-create view if not exists tournament_players_stats as
+create view tournament_players_stats as
 (
 (
-select tid, pid, pname, wins, matches from
+select tid, pid, pname, wins, matches, lastoppid from
   players
     natural join
   tournamentplayers
@@ -53,7 +53,7 @@ where matches > 0 order by wins desc, wins/matches desc, pid
 )
 union all
 (
-select tid, pid, pname, wins, matches from
+select tid, pid, pname, wins, matches, lastoppid from
   players
     natural join
   tournamentplayers
