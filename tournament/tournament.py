@@ -95,6 +95,7 @@ def deleteMatches(tournamentid=-1):
               ' matches = DEFAULT, lastoppid = default;'
     else:
         if not existsTournament(tournamentid):
+            conn.close()
             return False
         sql = 'update tournamentplayers set wins = DEFAULT,' \
               ' matches = DEFAULT, lastoppid = default where tid = {0};' \
@@ -121,6 +122,7 @@ def deleteTournamentPlayers(tournamentid=-1):
         sql = 'delete from tournamentplayers;'
     else:
         if not existsTournament(tournamentid):
+            conn.close()
             return False
         sql = 'delete from tournamentplayers where tid = {0};' \
             .format(tournamentid)
@@ -147,6 +149,7 @@ def countTournamentPlayers(tournamentid=-1):
         sql = 'select count(distinct pid) from tournamentplayers;'
     else:
         if not existsTournament(tournamentid):
+            conn.close()
             return False, -1
         sql = 'select count(distinct pid) from tournamentplayers ' \
               'where tid = {0};'.format(tournamentid)
@@ -227,6 +230,7 @@ def playerStandings(tournamentid=-1):
         list2 = cur.fetchall()
     else:
         if not existsTournament(tournamentid):
+            conn.close()
             return False, []
         sql = 'select pid, pname, wins, matches from players natural join' \
               ' tournamentplayers where tid = {0} and matches = 0 ' \
@@ -275,6 +279,7 @@ def reportMatch(tournamentid, winner, loser):
 
     if not existsTournamentPlayer(tournamentid, winner) or \
             not existsTournamentPlayer(tournamentid, loser):
+        conn.close()
         return False
 
     sql = 'update tournamentplayers set matches = matches + 1,' \
