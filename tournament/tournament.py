@@ -8,21 +8,24 @@ from random import shuffle
 
 
 def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
+    """
+    Connect to the PostgreSQL database.
+    Returns a database connection and corresponding cursor.
+    """
     connection = psycopg2.connect("dbname=tournament")
     cursor = connection.cursor()
     return connection, cursor
 
 
 def existsPlayer(pid):
-    '''
+    """
     Check if a player exists
     Args:
         pid: Player ID
 
     Returns: Status
 
-    '''
+    """
     conn, cur = connect()
 
     sql = 'select count(*) from players where pid = {0};' \
@@ -35,7 +38,7 @@ def existsPlayer(pid):
 
 
 def existsTournament(tournamentid):
-    '''
+    """
     Check if a tournament exists
 
     Args:
@@ -43,7 +46,7 @@ def existsTournament(tournamentid):
 
     Returns: Status
 
-    '''
+    """
     conn, cur = connect()
 
     sql = 'select count(*) from tournaments where tid = {0};' \
@@ -56,7 +59,7 @@ def existsTournament(tournamentid):
 
 
 def existsTournamentPlayer(tournamentid, pid):
-    '''
+    """
     Check if a player is registered for a tournament
     Args:
         tournamentid: Tournament ID
@@ -64,7 +67,7 @@ def existsTournamentPlayer(tournamentid, pid):
 
     Returns: Status
 
-    '''
+    """
     conn, cur = connect()
 
     sql = 'select count(*) from tournamentplayers where tid = {0} and pid = {1};'.format(tournamentid, pid)
@@ -104,7 +107,8 @@ def deleteMatches(tournamentid=-1):
 
 
 def deleteTournamentPlayers(tournamentid=-1):
-    """Remove all the player records from the database.
+    """
+    Remove all the player records from the database.
 
     Args:
         tournamentid (int): Tournament ID of which players are to be deleted.
@@ -154,10 +158,10 @@ def countTournamentPlayers(tournamentid=-1):
 
 
 def playerCount():
-    '''
+    """
     Count all players, whether registered or not
     Returns: Number of players
-    '''
+    """
 
     conn, cur = connect()
 
@@ -243,9 +247,9 @@ def playerStandings(tournamentid=-1):
 
 
 def clearPlayers():
-    '''
+    """
     Delete all players
-    '''
+    """
     conn, cur = connect()
 
     sql = 'delete from players; delete from tournamentplayers;'
@@ -288,7 +292,8 @@ def reportMatch(tournamentid, winner, loser):
 
 
 def swissPairings(tournamentid):
-    """Returns a list of pairs of players for the next round of a match.
+    """
+    Returns a list of pairs of players for the next round of a match.
   
     Assuming that there are an even number of players registered, each player
     appears exactly once in the pairings.  Each player is paired with another
@@ -355,13 +360,13 @@ def swissPairings(tournamentid):
 
 
 def addTournament(name):
-    '''
+    """
     Register a new tournament
     Args:
         name: Name of tournament
     Returns:
         ID of tournament added
-    '''
+    """
     conn, cur = connect()
 
     sql = 'insert into tournaments (tname) values(\'{0}\') returning tid;' \
@@ -375,14 +380,14 @@ def addTournament(name):
 
 
 def addPlayerTournament(tid, pid):
-    '''
+    """
     Add a registered player to a tournament
     Args:
         tid: Tournament ID
         pid: Player ID
 
     Returns: Status
-    '''
+    """
 
     if not existsTournament(tid) or not existsPlayer(pid):
         return False
@@ -399,10 +404,10 @@ def addPlayerTournament(tid, pid):
 
 
 def countTournaments():
-    '''
+    """
     Count number of tournaments
     Returns: Number of tournaments
-    '''
+    """
     conn, cur = connect()
 
     sql = 'select count(*) from tournaments;'
@@ -415,9 +420,9 @@ def countTournaments():
 
 
 def clearTournaments():
-    '''
+    """
     Delete all tournaments
-    '''
+    """
     conn, cur = connect()
 
     sql = 'delete from tournamentplayers; delete from tournaments;'
