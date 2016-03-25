@@ -216,15 +216,15 @@ def playerStandings(tournamentid=-1):
     if tournamentid == -1:
         sql = 'select pid, pname, cwins, cmatches from players natural join ' \
               '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
-              ' from tournamentplayers where matches = 0 group by pid)' \
-              ' as allinfo order by pid;'
+              ' from tournamentplayers  group by pid)' \
+              ' as allinfo  where cmatches = 0 order by pid;'
         cur.execute(sql)
         list1 = cur.fetchall()
 
         sql = 'select pid, pname, cwins, cmatches from players natural join ' \
               '(select pid, sum(wins) as cwins, sum(matches) as cmatches' \
-              ' from tournamentplayers where matches > 0 group by pid)' \
-              ' as allinfo order by cwins desc, cwins/cmatches desc, pid;'
+              ' from tournamentplayers  group by pid)' \
+              ' as allinfo where cmatches > 0 order by cwins desc, cwins/cmatches desc, pid;'
         cur.execute(sql)
         list2 = cur.fetchall()
     else:
