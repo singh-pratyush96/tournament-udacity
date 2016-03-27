@@ -122,9 +122,8 @@ def deleteTournamentPlayers(tournamentid=-1):
         if not existsTournament(tournamentid):
             conn.close()
             return False
-        sql = 'delete from tournamentplayers where tid = {0};' \
-            .format(tournamentid)
-    cur.execute(sql)
+        sql = 'delete from tournamentplayers where tid = %s;'
+    cur.execute(sql, (tournamentid,))
 
     conn.commit()
     conn.close()
